@@ -5,6 +5,7 @@ use eftec\bladeone\BladeOne;
 use Error;
 use Exception;
 
+use Neutrino\Api\Configuration;
 use Neutrino\Api\Form\Bootstrap\EmailElement;
 use Neutrino\Api\Form\Bootstrap\TextAreaElement;
 use Neutrino\Database\Database;
@@ -13,6 +14,7 @@ use Neutrino\Api\Controller;
 use Neutrino\Api\Form\Form;
 use Neutrino\Api\Form\Bootstrap\SubmitElement;
 use Neutrino\Api\Form\Bootstrap\TextElement;
+use PDO;
 
 /**
  * Ce controller permet de gérer l'installation du CMS. Il sera là pour initialiser la base de donnée et le compte
@@ -88,7 +90,7 @@ class InstallerController extends Controller
                 'dbname'    => $form->get('dbname'),
                 'user'      => $form->get('user'),
                 'password'  => $form->get('password'),
-                'prefix'    => $form->get('prefix')
+                'prefix'    => $form->get('prefix') ?: 'ns_'
             ];
             /*
              * Si les coordonnées vers la base de donnée sont correctes, alors on affiche une vue de succès afin que
@@ -207,7 +209,7 @@ class InstallerController extends Controller
             ->add(new SubmitElement('<i class="fas fa-shield-alt"></i> Installer'));
 
         if ($form->isSubmit() && $form->isValid()) {
-            $this->installer($_SESSION['database'], $_SESSION['user'], [
+            $this->installer($this->getDatabase($_SESSION['database']), $_SESSION['user'], [
                 'title'       => $form->get('title'),
                 'description' => $form->get('description') ?: '',
                 'adminPath'   => $form->get('admin_path') ?: '/admin'
@@ -232,9 +234,31 @@ class InstallerController extends Controller
         ]);
     }
 
-    private function installer(array $database, array $user, array $configuration)
+    private function installer(Database $database, array $user, array $configuration)
     {
+        $database->execute(str_replace(
+            [ '{{prefix}}', '{{title}}', '{{description}}', '{{name}}', '{{lastname}}', '{{email}}', '{{password}}' ],
+            [
+                $_SESSION['database']['prefix'],
+                str_replace('\'', '\\\'', $configuration['title']),
+                str_replace('\'', '\\\'', $configuration['description'] ?: ''),
+                str_replace('\'', '\\\'', $user['name']),
+                str_replace('\'', '\\\'', $user['lastname']),
+                str_replace('\'', '\\\'', $user['email']),
+                str_replace('\'', '\\\'', $user['password'])
+            ],
+            file_get_contents(__DIR__ . '/schema.sql')
+        ));
 
+        (new Configuration(__DIR__.'/../../config/config-dist.json'))
+            ->set('database', $_SESSION['database'] + [
+                'mode' => [
+                    'fetch' => PDO::FETCH_OBJ,
+                    'error' => PDO::ERRMODE_WARNING
+                ],
+                'charset' => 'utf8mb4'
+            ])
+            ->save(__DIR__.'/../../config/config.json');
     }
 
     /**
