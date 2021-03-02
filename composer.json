@@ -1,0 +1,25 @@
+{
+    "name": "neutronstars/neutrino-cms",
+    "description": "Neutrino CMS developed by NeutronStars",
+    "type": "project",
+    "authors": [
+        {
+            "name": "NeutronStars",
+            "email": "pro@neutronstars.fr"
+        }
+    ],
+    "minimum-stability": "stable",
+    "license": [ "Apache-2.0" ],
+    "require": {
+        "php": ">= 7.4",
+        "ext-pdo": "*",
+        "eftec/bladeone": "^3.51"
+    },
+    "autoload": {
+        "psr-4": {
+            "Neutrino\\": "src/",
+            "Theme\\": "themes/",
+            "Plugin\\": "plugins/"
+        }
+    }
+}

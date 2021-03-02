@@ -1,0 +1,24 @@
+{
+  "database": {
+    "url": "127.0.0.1",
+    "port": 3306,
+    "dbname": "",
+    "user": "",
+    "password": "",
+    "charset": "utf8mb4",
+    "mode": {
+      "fetch": 1,
+      "error": 2
+    }
+  },
+  "mail": {
+    "host": "localhost",
+    "port": 25,
+    "smtp": false,
+    "user": "",
+    "password": "",
+    "charset": "utf8",
+    "from": "root@localhost",
+    "fromName": "Root User"
+  }
+}
